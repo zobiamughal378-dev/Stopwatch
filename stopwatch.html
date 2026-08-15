@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>⏱️ Pro Timer - Split Layout</title>
+    <style>
+        /* ============================================
+                   CSS VARIABLES & RESET
+                   ============================================ */
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #141b2b;
+            --bg-card: #1a2332;
+            --bg-card-hover: #1f2a3e;
+            --text-primary: #e8edf5;
+            --text-secondary: #8899bb;
+            --text-muted: #4a5a7a;
+            --border-color: #2a3a55;
+            --shadow-color: rgba(0, 0, 0, 0.5);
+            --accent-start: #00d4aa;
+            --accent-stop: #ff6b6b;
+            --accent-lap: #9775fa;
+            --glow-start: rgba(0, 212, 170, 0.3);
+            --glow-stop: rgba(255, 107, 107, 0.3);
+            --radius: 16px;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --gap: 20px;
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #f0f2f5;
+            --bg-secondary: #ffffff;
+            --bg-card: #ffffff;
+            --bg-card-hover: #f8f9fa;
+            --text-primary: #1a1a2e;
+            --text-secondary: #555577;
+            --text-muted: #9999bb;
+            --border-color: #dde2ea;
+            --shadow-color: rgba(0, 0, 0, 0.08);
+            --accent-start: #00b894;
+            --accent-stop: #e17055;
+            --accent-lap: #845ef7;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            font-size: 16px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            padding: 16px;
+            transition: background var(--transition), color var(--transition);
+            overflow-x: hidden;
+        }
+
+        /* ============================================
+                   MAIN CONTAINER - FLEXIBLE
+                   ============================================ */
+        .container {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 24px;
+            max-width: 1000px;
+            width: 100%;
+            box-shadow: 0 20px 60px var(--shadow-color), 0 0 0 1px var(--border-color);
+            transition: all var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 20%, var(--accent-start), transparent 70%);
+            opacity: 0.03;
+            pointer-events: none;
+        }
+
+        /* ============================================
+                   SPLIT LAYOUT - FLEX
+                   ============================================ */
+        .split-layout {
+            display: flex;
+            gap: var(--gap);
+            position: relative;
+            z-index: 1;
+            flex-direction: column;
+        }
+
+        /* ============================================
+                   LEFT SIDE - TIMER
+                   ============================================ */
+        .timer-side {
+            flex: 1;
+            min-width: 0;
+        }
+
+        /* ============================================
+                   RIGHT SIDE - LAPS
+                   ============================================ */
+        .laps-side {
+            flex: 0 0 40%;
+            min-width: 0;
+            max-height: 500px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ============================================
+                   HEADER
+                   ============================================ */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            font-size: clamp(18px, 2.5vw, 22px);
+        }
+
+        .header-title {
+            font-size: clamp(12px, 1.8vw, 14px);
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+        }
+
+        .header-title span {
+            color: var(--accent-start);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .header-btn {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: clamp(11px, 1.4vw, 13px);
+            cursor: pointer;
+            transition: all var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            touch-action: manipulation;
+        }
+
+        .header-btn:hover {
+            background: var(--bg-card-hover);
+            color: var(--text-primary);
+            transform: translateY(-1px);
+        }
+
+        .header-btn:active {
+            transform: scale(0.95);
+        }
+
+        .theme-toggle {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: clamp(14px, 2vw, 16px);
+            cursor: pointer;
+            transition: all var(--transition);
+            line-height: 1;
+        }
+
+        .theme-toggle:hover {
+            background: var(--bg-card-hover);
+            color: var(--text-primary);
+            transform: rotate(15deg);
+        }
+
+        /* ============================================
+                   DISPLAY
+                   ============================================ */
+        .display-wrapper {
+            background: var(--bg-secondary);
+            border-radius: 14px;
+            padding: 18px 22px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border-color);
+            transition: all var(--transition);
+        }
+
+        .display-wrapper.running {
+            border-color: var(--accent-start);
+            box-shadow: 0 0 30px var(--glow-start);
+        }
+
+        .display-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .status-badge {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            padding: 2px 12px;
+            border-radius: 20px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            transition: all var(--transition);
+        }
+
+        .status-badge.running {
+            color: var(--accent-start);
+            border-color: var(--accent-start);
+            animation: pulseBadge 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulseBadge {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .total-time {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .display {
+            font-size: clamp(52px, 10vw, 80px);
+            font-weight: 300;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 2px;
+            color: var(--text-primary);
+            font-family: 'SF Mono', 'Courier New', monospace;
+            text-align: center;
+            line-height: 1.2;
+            transition: color var(--transition);
+            padding: 4px 0;
+        }
+
+        .display .milliseconds {
+            font-size: clamp(26px, 4.5vw, 40px);
+            color: var(--text-muted);
+        }
+
+        .display .separator {
+            color: var(--text-muted);
+            opacity: 0.5;
+        }
+
+        /* ============================================
+                   BUTTONS
+                   ============================================ */
+        .buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 0;
+        }
+
+        .btn {
+            padding: 13px 6px;
+            border: none;
+            border-radius: 12px;
+            font-size: clamp(12px, 1.6vw, 14px);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-family: inherit;
+            touch-action: manipulation;
+            user-select: none;
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent);
+            opacity: 0;
+            transition: opacity var(--transition);
+            border-radius: 12px;
+        }
+
+        .btn:hover::after {
+            opacity: 1;
+        }
+
+        .btn:active {
+            transform: scale(0.94) !important;
+        }
+
+        .btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn:disabled::after {
+            opacity: 0;
+        }
+
+        .btn-start {
+            background: var(--accent-start);
+            color: #fff;
+            box-shadow: 0 4px 20px var(--glow-start);
+        }
+
+        .btn-start:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px var(--glow-start);
+        }
+
+        .btn-start.running {
+            background: var(--accent-stop);
+            box-shadow: 0 4px 20px var(--glow-stop);
+            animation: btnGlow 1.5s ease-in-out infinite;
+        }
+
+        @keyframes btnGlow {
+            0%, 100% { box-shadow: 0 4px 20px var(--glow-stop); }
+            50% { box-shadow: 0 4px 40px var(--glow-stop); }
+        }
+
+        .btn-stop {
+            background: var(--accent-stop);
+            color: #fff;
+            box-shadow: 0 4px 20px var(--glow-stop);
+        }
+
+        .btn-stop:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px var(--glow-stop);
+        }
+
+        .btn-lap {
+            background: var(--accent-lap);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(151, 117, 250, 0.3);
+        }
+
+        .btn-lap:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(151, 117, 250, 0.4);
+        }
+
+        .btn-reset {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-reset:hover:not(:disabled) {
+            background: var(--bg-card-hover);
+            color: var(--text-primary);
+            transform: translateY(-2px);
+        }
+
+        /* ============================================
+                   LAPS SECTION (Right Side)
+                   ============================================ */
+        .laps-side-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .laps-side-header .laps-title {
+            font-size: clamp(12px, 1.6vw, 14px);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-secondary);
+        }
+
+        .laps-stats {
+            display: flex;
+            gap: 12px;
+            font-size: clamp(10px, 1.2vw, 12px);
+            color: var(--text-muted);
+            flex-wrap: wrap;
+        }
+
+        .laps-stats .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .laps-stats .stat-value {
+            color: var(--text-primary);
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .laps-container {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 4px;
+            min-height: 100px;
+            max-height: 320px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .laps-container::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .laps-container::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+            border-radius: 4px;
+        }
+
+        .laps-container::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        .lap-item {
+            display: grid;
+            grid-template-columns: 45px 1fr 60px;
+            align-items: center;
+            padding: 8px 12px;
+            margin-bottom: 4px;
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            border: 1px solid transparent;
+            transition: all var(--transition);
+            font-size: clamp(12px, 1.4vw, 14px);
+            gap: 4px;
+        }
+
+        .lap-item:hover {
+            border-color: var(--border-color);
+        }
+
+        .lap-item.best {
+            border-color: var(--accent-start);
+            background: rgba(0, 212, 170, 0.06);
+        }
+
+        .lap-item.worst {
+            border-color: var(--accent-stop);
+            background: rgba(255, 107, 107, 0.06);
+        }
+
+        .lap-item .lap-number {
+            font-weight: 600;
+            color: var(--text-muted);
+            font-size: clamp(10px, 1.2vw, 12px);
+            letter-spacing: 0.5px;
+        }
+
+        .lap-item .lap-time {
+            font-family: 'SF Mono', 'Courier New', monospace;
+            font-weight: 500;
+            text-align: center;
+            color: var(--text-primary);
+            font-size: clamp(12px, 1.4vw, 14px);
+        }
+
+        .lap-item .lap-diff {
+            font-family: 'SF Mono', 'Courier New', monospace;
+            font-size: clamp(10px, 1.2vw, 12px);
+            text-align: right;
+            color: var(--text-muted);
+        }
+
+        .lap-item .lap-diff.positive {
+            color: var(--accent-stop);
+        }
+
+        .lap-item .lap-diff.negative {
+            color: var(--accent-start);
+        }
+
+        .no-laps {
+            text-align: center;
+            padding: 30px 10px;
+            color: var(--text-muted);
+            font-size: clamp(13px, 1.4vw, 14px);
+            border: 2px dashed var(--border-color);
+            border-radius: 10px;
+        }
+
+        .no-laps span {
+            display: block;
+            font-size: 28px;
+            margin-bottom: 6px;
+        }
+
+        /* ============================================
+                   KEYBOARD HINT
+                   ============================================ */
+        .keyboard-hint {
+            margin-top: 14px;
+            display: flex;
+            justify-content: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            color: var(--text-muted);
+            font-size: clamp(10px, 1.2vw, 11px);
+        }
+
+        .keyboard-hint kbd {
+            background: var(--bg-secondary);
+            padding: 2px 10px;
+            border-radius: 4px;
+            font-size: clamp(9px, 1vw, 10px);
+            font-family: inherit;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        /* ============================================
+                   TOAST
+                   ============================================ */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            padding: 10px 22px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 40px var(--shadow-color);
+            font-size: 13px;
+            font-weight: 500;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            pointer-events: none;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ============================================
+                   RESPONSIVE - SPLIT LAYOUT
+                   ============================================ */
+
+        /* Laptop & Desktop - Side by Side */
+        @media (min-width: 769px) {
+            .split-layout {
+                flex-direction: row;
+                align-items: stretch;
+            }
+
+            .timer-side {
+                flex: 1.5;
+            }
+
+            .laps-side {
+                flex: 1;
+                max-height: none;
+                border-left: 1px solid var(--border-color);
+                padding-left: var(--gap);
+            }
+
+            .laps-container {
+                max-height: 380px;
+            }
+
+            .buttons {
+                grid-template-columns: 1fr 1fr 1fr 1fr;
+            }
+
+            .container {
+                padding: 28px 32px;
+            }
+        }
+
+        /* Tablet */
+        @media (min-width: 550px) and (max-width: 768px) {
+            .split-layout {
+                flex-direction: column;
+            }
+
+            .laps-side {
+                flex: none;
+                max-height: 280px;
+                border-top: 1px solid var(--border-color);
+                padding-top: var(--gap);
+                margin-top: 4px;
+            }
+
+            .laps-container {
+                max-height: 200px;
+            }
+
+            .buttons {
+                grid-template-columns: 1fr 1fr 1fr 1fr;
+            }
+
+            .container {
+                padding: 22px 24px;
+            }
+        }
+
+        /* Mobile */
+        @media (max-width: 549px) {
+            .split-layout {
+                flex-direction: column;
+                gap: 14px;
+            }
+
+            .laps-side {
+                flex: none;
+                max-height: 250px;
+                border-top: 1px solid var(--border-color);
+                padding-top: 14px;
+                margin-top: 2px;
+            }
+
+            .laps-container {
+                max-height: 180px;
+            }
+
+            .buttons {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+
+            .btn {
+                padding: 11px 4px;
+                font-size: 11px;
+                min-height: 42px;
+            }
+
+            .display {
+                font-size: 42px;
+            }
+
+            .display .milliseconds {
+                font-size: 22px;
+            }
+
+            .display-wrapper {
+                padding: 12px 14px;
+                margin-bottom: 12px;
+            }
+
+            .container {
+                padding: 14px 12px;
+                border-radius: 14px;
+            }
+
+            .lap-item {
+                grid-template-columns: 35px 1fr 45px;
+                font-size: 11px;
+                padding: 6px 8px;
+            }
+
+            .laps-stats {
+                font-size: 9px;
+                gap: 6px;
+            }
+
+            .laps-side-header .laps-title {
+                font-size: 11px;
+            }
+
+            .header {
+                margin-bottom: 10px;
+            }
+
+            .header-title {
+                font-size: 10px;
+                letter-spacing: 1.5px;
+            }
+
+            .header-btn {
+                font-size: 10px;
+                padding: 4px 8px;
+            }
+
+            .keyboard-hint {
+                font-size: 9px;
+                gap: 6px;
+                margin-top: 10px;
+            }
+
+            .keyboard-hint kbd {
+                font-size: 8px;
+                padding: 1px 6px;
+            }
+
+            .no-laps {
+                padding: 18px 8px;
+                font-size: 12px;
+            }
+
+            .no-laps span {
+                font-size: 22px;
+            }
+
+            .toast {
+                bottom: 16px;
+                padding: 8px 16px;
+                font-size: 12px;
+            }
+        }
+
+        /* Small Mobile */
+        @media (max-width: 380px) {
+            .display {
+                font-size: 34px;
+            }
+
+            .display .milliseconds {
+                font-size: 18px;
+            }
+
+            .container {
+                padding: 10px 8px;
+            }
+
+            .btn {
+                font-size: 10px;
+                padding: 9px 3px;
+                min-height: 36px;
+            }
+
+            .lap-item {
+                grid-template-columns: 30px 1fr 38px;
+                font-size: 10px;
+                padding: 4px 6px;
+            }
+        }
+
+        /* Landscape Phones */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .container {
+                padding: 12px 16px;
+                max-width: 600px;
+            }
+
+            .display {
+                font-size: 36px;
+            }
+
+            .display .milliseconds {
+                font-size: 18px;
+            }
+
+            .display-wrapper {
+                padding: 8px 14px;
+                margin-bottom: 8px;
+            }
+
+            .btn {
+                padding: 6px 4px;
+                font-size: 10px;
+                min-height: 32px;
+            }
+
+            .buttons {
+                gap: 6px;
+            }
+
+            .laps-container {
+                max-height: 100px;
+            }
+
+            .lap-item {
+                padding: 3px 6px;
+                font-size: 10px;
+                grid-template-columns: 30px 1fr 35px;
+            }
+
+            .split-layout {
+                gap: 10px;
+            }
+
+            .laps-side {
+                max-height: 120px;
+                padding-top: 8px;
+            }
+        }
+
+        /* Touch-friendly */
+        @media (pointer: coarse) {
+            .btn {
+                min-height: 48px;
+            }
+            .header-btn {
+                padding: 6px 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================
+    TOAST
+    ============================================ -->
+    <div class="toast" id="toast"></div>
+
+    <!-- ============================================
+    MAIN CONTAINER
+    ============================================ -->
+    <div class="container" id="app">
+
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <span class="logo-icon">⏱️</span>
+                <span class="header-title">Pro <span>Timer</span></span>
+            </div>
+            <div class="header-actions">
+                <button class="header-btn" id="exportBtn" title="Export Laps">📥 Export</button>
+                <button class="theme-toggle" id="themeToggle" title="Toggle Theme">🌓</button>
+            </div>
+        </div>
+
+        <!-- ============================================
+        SPLIT LAYOUT
+        ============================================ -->
+        <div class="split-layout">
+
+            <!-- LEFT SIDE - TIMER -->
+            <div class="timer-side">
+                <!-- Display -->
+                <div class="display-wrapper" id="displayWrapper">
+                    <div class="display-top">
+                        <span class="status-badge" id="statusBadge">● Ready</span>
+                        <span class="total-time" id="totalTime">Total: 00:00.00</span>
+                    </div>
+                    <div class="display" id="display">
+                        <span id="minutes">00</span><span class="separator">:</span>
+                        <span id="seconds">00</span><span class="separator">.</span>
+                        <span id="milliseconds" class="milliseconds">00</span>
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="buttons">
+                    <button class="btn btn-start" id="startBtn">▶ Start</button>
+                    <button class="btn btn-stop" id="stopBtn" disabled>⏹ Stop</button>
+                    <button class="btn btn-lap" id="lapBtn" disabled>⏱ Lap</button>
+                    <button class="btn btn-reset" id="resetBtn">⟳ Reset</button>
+                </div>
+            </div>
+
+            <!-- RIGHT SIDE - LAPS -->
+            <div class="laps-side">
+                <div class="laps-side-header">
+                    <span class="laps-title">📋 Laps</span>
+                    <span class="laps-stats">
+                        <span class="stat-item">
+                            Avg <span class="stat-value" id="avgLap">—</span>
+                        </span>
+                        <span class="stat-item">
+                            Best <span class="stat-value" id="bestLap">—</span>
+                        </span>
+                        <span class="stat-item" style="font-weight:600;color:var(--text-secondary);">
+                            <span id="lapCounter">0</span>
+                        </span>
+                    </span>
+                </div>
+                <div class="laps-container" id="lapsContainer">
+                    <div class="no-laps">
+                        <span>⏳</span>
+                        No laps recorded yet
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Keyboard Shortcuts -->
+        <div class="keyboard-hint">
+            <kbd>Space</kbd> Start/Stop
+            <kbd>R</kbd> Reset
+            <kbd>L</kbd> Lap
+            <kbd>⌘+E</kbd> Export
+        </div>
+    </div>
+
+    <!-- ============================================
+    JAVASCRIPT
+    ============================================ -->
+    <script>
+        (function() {
+            'use strict';
+
+            // DOM REFS
+            const minutesDisplay = document.getElementById('minutes');
+            const secondsDisplay = document.getElementById('seconds');
+            const millisecondsDisplay = document.getElementById('milliseconds');
+            const displayWrapper = document.getElementById('displayWrapper');
+            const statusBadge = document.getElementById('statusBadge');
+            const totalTimeDisplay = document.getElementById('totalTime');
+            const startBtn = document.getElementById('startBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            const lapBtn = document.getElementById('lapBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const exportBtn = document.getElementById('exportBtn');
+            const lapsContainer = document.getElementById('lapsContainer');
+            const lapCounter = document.getElementById('lapCounter');
+            const avgLapDisplay = document.getElementById('avgLap');
+            const bestLapDisplay = document.getElementById('bestLap');
+            const themeToggle = document.getElementById('themeToggle');
+            const toast = document.getElementById('toast');
+
+            // STATE
+            let minutes = 0,
+                seconds = 0,
+                milliseconds = 0;
+            let timerInterval = null;
+            let isRunning = false;
+            let lapCount = 0;
+            let laps = [];
+            let elapsedMs = 0;
+
+            // HELPERS
+            function pad(n) { return String(n).padStart(2, '0'); }
+
+            function formatTime(m, s, ms) {
+                return `${pad(m)}:${pad(s)}.${pad(ms)}`;
+            }
+
+            function formatMs(ms) {
+                const m = Math.floor(ms / 60000);
+                const s = Math.floor((ms % 60000) / 1000);
+                const msRem = Math.floor((ms % 1000) / 10);
+                return formatTime(m, s, msRem);
+            }
+
+            function getCurrentMs() {
+                return (minutes * 60000) + (seconds * 1000) + (milliseconds * 10);
+            }
+
+            let toastTimeout = null;
+
+            function showToast(message, duration = 2000) {
+                toast.textContent = message;
+                toast.classList.add('show');
+                clearTimeout(toastTimeout);
+                toastTimeout = setTimeout(() => {
+                    toast.classList.remove('show');
+                }, duration);
+            }
+
+            // UPDATE DISPLAY
+            function updateDisplay() {
+                minutesDisplay.textContent = pad(minutes);
+                secondsDisplay.textContent = pad(seconds);
+                millisecondsDisplay.textContent = pad(milliseconds);
+                totalTimeDisplay.textContent = `Total: ${formatTime(minutes, seconds, milliseconds)}`;
+            }
+
+            // TIMER CONTROLS
+            function startTimer() {
+                if (isRunning) return;
+                isRunning = true;
+                displayWrapper.classList.add('running');
+                statusBadge.textContent = '● Running';
+                statusBadge.classList.add('running');
+                startBtn.textContent = '⏸ Pause';
+                startBtn.classList.add('running');
+                startBtn.disabled = false;
+                stopBtn.disabled = false;
+                lapBtn.disabled = false;
+
+                const startMs = Date.now() - elapsedMs;
+                timerInterval = setInterval(() => {
+                    const now = Date.now();
+                    elapsedMs = now - startMs;
+                    minutes = Math.floor(elapsedMs / 60000);
+                    seconds = Math.floor((elapsedMs % 60000) / 1000);
+                    milliseconds = Math.floor((elapsedMs % 1000) / 10);
+                    updateDisplay();
+                }, 10);
+            }
+
+            function pauseTimer() {
+                if (!isRunning) return;
+                isRunning = false;
+                clearInterval(timerInterval);
+                timerInterval = null;
+                displayWrapper.classList.remove('running');
+                statusBadge.textContent = '● Paused';
+                statusBadge.classList.remove('running');
+                startBtn.textContent = '▶ Resume';
+                startBtn.classList.remove('running');
+                stopBtn.disabled = true;
+                lapBtn.disabled = true;
+            }
+
+            function stopTimer() {
+                if (!isRunning) return;
+                pauseTimer();
+                addLap();
+                showToast('⏹ Stopped • Lap recorded');
+            }
+
+            function resetTimer() {
+                if (isRunning) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    isRunning = false;
+                }
+                minutes = 0;
+                seconds = 0;
+                milliseconds = 0;
+                elapsedMs = 0;
+                lapCount = 0;
+                laps = [];
+                updateDisplay();
+                displayWrapper.classList.remove('running');
+                statusBadge.textContent = '● Ready';
+                statusBadge.classList.remove('running');
+                startBtn.textContent = '▶ Start';
+                startBtn.classList.remove('running');
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+                lapBtn.disabled = true;
+                renderLaps();
+                showToast('⟳ Reset');
+            }
+
+            // LAP LOGIC
+            function addLap() {
+                if (!isRunning) return;
+                const currentMs = getCurrentMs();
+                const timeStr = formatTime(minutes, seconds, milliseconds);
+                let diff = 0;
+                if (laps.length > 0) {
+                    diff = currentMs - laps[0].timestamp;
+                }
+                laps.unshift({
+                    time: timeStr,
+                    diff: diff,
+                    timestamp: currentMs,
+                    number: lapCount + 1
+                });
+                lapCount++;
+                renderLaps();
+                showToast(`⏱ Lap ${lapCount} • ${timeStr}`);
+            }
+
+            function renderLaps() {
+                if (laps.length === 0) {
+                    lapsContainer.innerHTML = `
+                                <div class="no-laps">
+                                    <span>⏳</span>
+                                    No laps recorded yet
+                                </div>
+                            `;
+                    lapCounter.textContent = '0';
+                    avgLapDisplay.textContent = '—';
+                    bestLapDisplay.textContent = '—';
+                    return;
+                }
+
+                lapCounter.textContent = laps.length;
+
+                const times = laps.map(l => l.timestamp);
+                const diffs = [];
+                for (let i = 0; i < times.length - 1; i++) {
+                    diffs.push(times[i] - times[i + 1]);
+                }
+                const avg = diffs.length > 0 ? diffs.reduce((a, b) => a + b, 0) / diffs.length : 0;
+                const best = diffs.length > 0 ? Math.min(...diffs) : 0;
+                const worst = diffs.length > 0 ? Math.max(...diffs) : 0;
+
+                avgLapDisplay.textContent = diffs.length > 0 ? formatMs(avg) : '—';
+                bestLapDisplay.textContent = diffs.length > 0 ? formatMs(best) : '—';
+
+                let html = '';
+                laps.forEach((lap, index) => {
+                    const isBest = lap.diff > 0 && lap.diff === best && diffs.length > 0;
+                    const isWorst = lap.diff > 0 && lap.diff === worst && diffs.length > 0;
+                    let diffStr = '—';
+                    let diffClass = '';
+                    if (lap.diff > 0 && index < laps.length - 1) {
+                        diffStr = `+${formatMs(lap.diff)}`;
+                        diffClass = 'positive';
+                    } else if (lap.diff < 0 && index < laps.length - 1) {
+                        diffStr = formatMs(Math.abs(lap.diff));
+                        diffClass = 'negative';
+                    } else if (index === laps.length - 1 && laps.length > 1) {
+                        diffStr = '—';
+                    }
+                    const cls = isBest ? 'lap-item best' : isWorst ? 'lap-item worst' : 'lap-item';
+                    html += `
+                                <div class="${cls}">
+                                    <span class="lap-number">#${lap.number}</span>
+                                    <span class="lap-time">${lap.time}</span>
+                                    <span class="lap-diff ${diffClass}">${diffStr}</span>
+                                </div>
+                            `;
+                });
+                lapsContainer.innerHTML = html;
+            }
+
+            // EXPORT
+            function exportLaps() {
+                if (laps.length === 0) {
+                    showToast('⚠️ No laps to export', 2000);
+                    return;
+                }
+                let csv = 'Lap,Time,Difference (ms)\n';
+                laps.forEach((lap) => {
+                    const diffStr = lap.diff > 0 ? String(lap.diff) : '—';
+                    csv += `#${lap.number},${lap.time},${diffStr}\n`;
+                });
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `laps_${new Date().toISOString().slice(0, 10)}.csv`;
+                a.click();
+                URL.revokeObjectURL(url);
+                showToast('📥 Exported as CSV');
+            }
+
+            // THEME
+            function toggleTheme() {
+                const current = document.documentElement.getAttribute('data-theme');
+                const next = current === 'light' ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', next);
+                localStorage.setItem('theme', next);
+                themeToggle.textContent = next === 'light' ? '🌙' : '🌓';
+                showToast(`🌓 ${next.charAt(0).toUpperCase() + next.slice(1)} mode`);
+            }
+
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            themeToggle.textContent = savedTheme === 'light' ? '🌙' : '🌓';
+
+            // KEYBOARD
+            document.addEventListener('keydown', (e) => {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    if (isRunning) pauseTimer();
+                    else startTimer();
+                } else if (e.key === 'r' || e.key === 'R') {
+                    resetTimer();
+                } else if (e.key === 'l' || e.key === 'L') {
+                    addLap();
+                } else if ((e.metaKey || e.ctrlKey) && e.key === 'e') {
+                    e.preventDefault();
+                    exportLaps();
+                }
+            });
+
+            // EVENT LISTENERS
+            startBtn.addEventListener('click', () => {
+                if (isRunning) pauseTimer();
+                else startTimer();
+            });
+            stopBtn.addEventListener('click', stopTimer);
+            lapBtn.addEventListener('click', addLap);
+            resetBtn.addEventListener('click', resetTimer);
+            exportBtn.addEventListener('click', exportLaps);
+            themeToggle.addEventListener('click', toggleTheme);
+            document.getElementById('display').addEventListener('dblclick', addLap);
+
+            // INIT
+            updateDisplay();
+            renderLaps();
+
+            console.log('⏱️ Pro Timer - Split Layout v2.0');
+            console.log('📱 Mobile: Vertical | 💻 Laptop: Side-by-Side');
+
+        })();
+    </script>
+
+</body>
+</html>
